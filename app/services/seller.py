@@ -9,6 +9,7 @@ from app.database.models import Seller
 from app.config import security_settings
 
 from passlib.context import CryptContext
+from app.utils import generate_access_token, decode_access_token
 
 pwd_context = CryptContext(schemes="bcrypt")
 
@@ -31,25 +32,13 @@ class SellerService:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
         
         # Generating jwt token
-        token = jwt.encode(
-            payload={
+        token = generate_access_token(
+            {
                 "user":{
-                    "name":seller.name,
-                    "email":seller.email
-                },
-                "exp":datetime.now(timezone.utc) + timedelta(days=1)
-            },
-            key=security_settings.JWT_SECRET,
-            algorithm=security_settings.JWT_ALGORITHM
+                    "id":seller.id
+                } 
+            }
         )
         return token
-        
+
     
-    def get():
-        pass
-    
-    def update():
-        pass
-    
-    def delete():
-        pass
