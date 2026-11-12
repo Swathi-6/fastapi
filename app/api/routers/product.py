@@ -1,26 +1,25 @@
 from fastapi import APIRouter
 
 from fastapi import HTTPException, status
-from fastapi.concurrency import asynccontextmanager
-from app.database.session import ServiceDependency
 from app.schema.models import CreateProduct, ReadProduct, UpdateProduct
 from app.database.models import Product
+from app.api.dependencies import ServiceDependency
 
 
-router = APIRouter()
+router = APIRouter(prefix="/product", tags=["Product"])
 
-@router.get("/product/{id}", response_model = ReadProduct)
+@router.get("/", response_model = ReadProduct)
 async def get_product_by_id(id:int, service: ServiceDependency):
     product = await service.get(id)
     if product is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product with given ID doesn't exist")
     return product
 
-@router.post("/product", response_model= ReadProduct)
+@router.post("/", response_model= ReadProduct)
 async def create_product(data: CreateProduct, service: ServiceDependency):
     return await service.add(data)
 
-@router.put("/product", response_model=ReadProduct)
+@router.put("/", response_model=ReadProduct)
 async def  update_product(id:int, data:UpdateProduct, service: ServiceDependency):    
     updated_data = data.model_dump(exclude_none=True)
     if updated_data is None:
@@ -30,7 +29,7 @@ async def  update_product(id:int, data:UpdateProduct, service: ServiceDependency
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product with given ID doesn't exist")
     return product
 
-@router.delete("/product")
+@router.delete("/")
 async def delete_product(id:int, service: ServiceDependency) -> dict[str, str]:
     if not await service.delete(id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product with given ID doesn't exist")
